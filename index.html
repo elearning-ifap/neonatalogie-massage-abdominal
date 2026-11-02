@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Massage abdominal en néonatologie — prototype v0.9</title>
+<style>
+:root{
+  --ink:#122b3a;--muted:#61717b;--paper:#f7faf9;--panel:#ffffff;--navy:#173d58;
+  --teal:#37b7aa;--teal-soft:#dff5f1;--blue:#246b8f;--orange:#f2a33a;--orange-soft:#fff4de;
+  --red:#d84d4d;--red-soft:#fff0f0;--green:#2f8c67;--green-soft:#e9f7f0;--line:#dce5e7;
+  --shadow:0 18px 55px rgba(18,43,58,.10);--radius:22px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);font-family:"Segoe UI Variable","Aptos","Segoe UI",Arial,sans-serif}
+button,input{font:inherit}
+button{cursor:pointer}
+a{color:var(--blue)}
+.app{min-height:100vh;display:grid;grid-template-rows:auto 1fr}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(247,250,249,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.topbar-inner{max-width:1500px;margin:auto;height:74px;padding:0 24px;display:flex;align-items:center;gap:18px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand-mark{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--navy),var(--teal));display:grid;place-items:center;color:white;font-weight:800;letter-spacing:.04em}
+.brand strong{display:block;font-size:15px}
+.brand span{display:block;color:var(--muted);font-size:12px}
+.progress-wrap{flex:1;min-width:120px}
+.progress-line{height:7px;background:#e5ecee;border-radius:99px;overflow:hidden}
+.progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--blue));transition:width .35s ease}
+.progress-meta{margin-top:5px;display:flex;justify-content:space-between;color:var(--muted);font-size:11px}
+.actions{display:flex;gap:8px}
+.icon-btn{border:1px solid var(--line);background:white;border-radius:12px;padding:10px 12px;color:var(--ink)}
+.icon-btn:hover{border-color:#b8c7cb;background:#fbfdfd}
+.shell{max-width:1500px;width:100%;margin:auto;display:grid;grid-template-columns:300px minmax(0,1fr);min-height:calc(100vh - 74px)}
+.sidebar{padding:22px 18px;border-right:1px solid var(--line);background:#f3f7f6}
+.side-head{padding:0 8px 14px}
+.side-head h2{margin:0;font-size:15px}
+.side-head p{margin:4px 0 0;color:var(--muted);font-size:12px}
+.nav{display:grid;gap:5px;max-height:calc(100vh - 170px);overflow:auto;padding-right:4px}
+.nav button{border:0;background:transparent;text-align:left;padding:9px 10px;border-radius:12px;color:#42535d;display:grid;grid-template-columns:24px 1fr;gap:8px;align-items:start}
+.nav button:hover{background:#e7efef}
+.nav button.active{background:white;color:var(--navy);box-shadow:0 6px 22px rgba(18,43,58,.07)}
+.nav .n{width:24px;height:24px;border-radius:8px;background:#dfe9e9;display:grid;place-items:center;font-size:11px;font-weight:800}
+.nav button.active .n{background:var(--teal);color:white}
+.nav .label{font-size:12px;line-height:1.25;padding-top:4px}
+.main{padding:34px clamp(20px,4vw,64px) 120px;min-width:0}
+.screen{display:none;animation:fade .28s ease}
+.screen.active{display:block}
+@keyframes fade{from{opacity:.25;transform:translateY(6px)}to{opacity:1;transform:none}}
+.eyebrow{text-transform:uppercase;letter-spacing:.12em;color:var(--teal);font-weight:800;font-size:12px;margin-bottom:12px}
+h1{font-size:clamp(36px,5vw,72px);line-height:.98;letter-spacing:-.045em;margin:0 0 18px;max-width:1050px}
+h2{font-size:clamp(27px,3vw,44px);line-height:1.05;letter-spacing:-.025em;margin:0 0 14px}
+h3{font-size:20px;margin:0 0 10px}
+.lead{font-size:clamp(18px,2vw,25px);line-height:1.45;color:#42535d;max-width:900px}
+.small{font-size:13px;color:var(--muted)}
+.hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);gap:40px;align-items:center;min-height:66vh}
+.hero-art{min-height:440px;border-radius:34px;background:
+radial-gradient(circle at 25% 20%,rgba(255,255,255,.65),transparent 26%),
+linear-gradient(135deg,#d9f3ee,#b8e4df 48%,#83cfd0);
+position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.hero-art:before{content:"";position:absolute;width:330px;height:330px;border-radius:50%;background:rgba(23,61,88,.12);right:-70px;top:-50px}
+.hero-art:after{content:"";position:absolute;width:420px;height:230px;border-radius:50%;border:3px solid rgba(255,255,255,.75);right:55px;bottom:20px;transform:rotate(-12deg)}
+.baby-symbol{position:absolute;inset:0;display:grid;place-items:center;font-size:130px;filter:grayscale(1);opacity:.88}
+.hero-note{position:absolute;left:26px;bottom:26px;right:26px;padding:18px 20px;background:rgba(255,255,255,.86);backdrop-filter:blur(8px);border-radius:18px;font-weight:650}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0}
+.pill{display:inline-flex;align-items:center;gap:7px;background:white;border:1px solid var(--line);border-radius:99px;padding:8px 11px;font-size:12px}
+.pill strong{color:var(--navy)}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+.btn{border:0;border-radius:14px;padding:13px 18px;font-weight:750}
+.btn-primary{background:var(--navy);color:white}
+.btn-primary:hover{background:#0e3048}
+.btn-secondary{background:white;border:1px solid var(--line);color:var(--ink)}
+.btn-teal{background:var(--teal);color:#073832}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:24px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:24px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:0 8px 28px rgba(18,43,58,.045)}
+.card.soft{background:#f1f7f6}
+.card.warning{background:var(--orange-soft);border-color:#f4d69d}
+.card.danger{background:var(--red-soft);border-color:#efc0c0}
+.card.good{background:var(--green-soft);border-color:#bfe6d3}
+.card h3{color:var(--navy)}
+.big-quote{font-size:clamp(28px,4vw,54px);line-height:1.08;font-weight:850;letter-spacing:-.03em;max-width:980px}
+.stop-visual{margin-top:28px;border-radius:30px;min-height:330px;background:linear-gradient(135deg,#f8dfdf,#fff);display:grid;place-items:center;position:relative;overflow:hidden}
+.stop-visual .circle{width:260px;height:260px;border:22px solid var(--red);border-radius:50%;position:relative;display:grid;place-items:center;font-size:100px}
+.stop-visual .circle:after{content:"";position:absolute;width:270px;height:22px;background:var(--red);transform:rotate(-43deg);border-radius:20px}
+.stop-caption{font-size:25px;font-weight:850;color:#8f2525;margin-top:18px}
+.choice-grid{display:grid;gap:12px;margin-top:20px}
+.choice{border:1px solid var(--line);background:white;border-radius:16px;padding:16px 18px;text-align:left;display:flex;gap:12px;align-items:flex-start}
+.choice:hover{border-color:#9eb3b8}
+.choice.selected{border-color:var(--teal);box-shadow:0 0 0 3px rgba(55,183,170,.14)}
+.choice.correct{border-color:var(--green);background:var(--green-soft)}
+.choice.wrong{border-color:var(--red);background:var(--red-soft)}
+.feedback{display:none;margin-top:16px;padding:16px;border-radius:16px;background:#eef6f6;border-left:4px solid var(--teal)}
+.feedback.show{display:block}
+.kicker{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--blue)}
+.flip-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:22px}
+.flip{border:1px solid var(--line);background:white;border-radius:18px;min-height:160px;padding:18px;text-align:left;transition:.2s}
+.flip:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(18,43,58,.07)}
+.flip .back{display:none;color:#42535d;line-height:1.45}
+.flip.open{background:#f4faf9;border-color:#b9dcd7}
+.flip.open .front{display:none}
+.flip.open .back{display:block}
+.triad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:24px}
+.triad .col{border-radius:20px;padding:20px;background:white;border-top:6px solid var(--teal)}
+.triad .col.stop{border-top-color:var(--orange)}
+.triad .col.no{border-top-color:var(--red)}
+.tag-provisional{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:99px;background:var(--orange-soft);border:1px solid #f4d69d;color:#7b5318;font-size:11px;font-weight:800}
+.checklist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:20px}
+.check{border:1px solid var(--line);background:white;border-radius:15px;padding:14px;display:flex;align-items:center;gap:10px}
+.check input{width:20px;height:20px;accent-color:var(--teal)}
+.steps-board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:22px}
+.step-card{border-radius:20px;padding:18px;min-height:180px;background:white;border:1px solid var(--line);position:relative;overflow:hidden}
+.step-card .num{font-size:48px;font-weight:900;color:#d7e4e5;position:absolute;right:14px;top:4px}
+.step-card .gesture{font-size:48px;margin:30px 0 10px}
+.step-card .name{font-weight:850;color:var(--navy)}
+.video-zone{margin-top:22px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:22px;align-items:start}
+.video-card{background:#0d2533;border-radius:24px;overflow:hidden;box-shadow:var(--shadow);min-height:360px;position:relative;display:grid;place-items:center}
+.video-card video{width:100%;height:auto;max-height:65vh;background:#06141d}
+.video-empty{color:#dbe7ec;text-align:center;padding:34px;max-width:540px}
+.video-empty .icon{font-size:54px}
+.video-empty strong{display:block;font-size:20px;margin-top:10px}
+.video-empty span{display:block;color:#97afba;margin-top:7px;font-size:13px}
+.media-loader{margin-top:18px;background:#eaf5f4;border:1px dashed #8cbcb5;border-radius:18px;padding:15px}
+.media-loader input{max-width:100%}
+.gesture-info{display:grid;gap:12px}
+.annotation{background:white;border:1px solid var(--line);border-radius:18px;padding:18px}
+.annotation strong{display:block;color:var(--navy);margin-bottom:6px}
+.memory-rule{padding:18px 20px;border-radius:18px;background:var(--navy);color:white;font-size:18px;font-weight:700}
+.pressure-sim{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:24px}
+.pressure{border-radius:22px;padding:22px;background:white;border:1px solid var(--line);text-align:center}
+.pressure .hand{font-size:70px;display:block;margin-bottom:12px}
+.pressure.bad{border-color:#efc0c0;background:var(--red-soft)}
+.pressure.safe{border-color:#bfe6d3;background:var(--green-soft)}
+.flow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:25px}
+.flow .node{padding:14px 16px;border-radius:15px;background:white;border:1px solid var(--line);font-weight:750}
+.flow .arrow{color:var(--teal);font-size:25px}
+.quiz-box{background:white;border:1px solid var(--line);border-radius:24px;padding:24px;margin-top:22px}
+.quiz-status{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.dot{width:29px;height:29px;border-radius:9px;background:#e3ebec;display:grid;place-items:center;font-size:11px;font-weight:800}
+.dot.done{background:var(--teal);color:white}
+.score{font-size:72px;font-weight:900;letter-spacing:-.05em;color:var(--navy)}
+.bottom-nav{position:fixed;z-index:45;left:300px;right:0;bottom:0;background:rgba(247,250,249,.94);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:12px clamp(20px,4vw,64px);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.bottom-nav .middle{font-size:12px;color:var(--muted);text-align:center}
+.mobile-menu{display:none}
+.overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(5,18,25,.72);padding:28px;align-items:center;justify-content:center}
+.overlay.show{display:flex}
+.modal{background:white;width:min(760px,100%);max-height:90vh;overflow:auto;border-radius:25px;padding:26px}
+.modal h2{font-size:28px}
+.file-status{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px}
+.file-chip{border:1px solid var(--line);border-radius:12px;padding:10px;font-size:12px;background:white}
+.file-chip.ok{background:var(--green-soft);border-color:#bfe6d3}
+hr{border:0;border-top:1px solid var(--line);margin:26px 0}
+@media(max-width:1000px){
+  .shell{grid-template-columns:1fr}.sidebar{display:none}.bottom-nav{left:0}.mobile-menu{display:inline-flex}
+  .hero{grid-template-columns:1fr}.hero-art{min-height:320px}.grid3,.flip-grid,.steps-board{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:700px){
+  .topbar-inner{padding:0 12px;height:68px}.brand span{display:none}.actions .hide-sm{display:none}
+  .main{padding:26px 16px 110px}.grid2,.grid3,.flip-grid,.triad,.checklist,.steps-board,.pressure-sim,.video-zone{grid-template-columns:1fr}
+  h1{font-size:42px}.hero{gap:24px}.hero-art{min-height:260px}.baby-symbol{font-size:90px}
+  .bottom-nav{padding:10px 12px}.bottom-nav .middle{display:none}.btn{padding:12px 14px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="topbar-inner">
+    <button class="icon-btn mobile-menu" id="openMenu" aria-label="Ouvrir le menu">☰</button>
+    <div class="brand">
+      <div class="brand-mark">CHT</div>
+      <div><strong>Massage abdominal</strong><span>Prototype pédagogique v0.9 · Néonatologie</span></div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-line"><div class="progress-bar" id="progressBar"></div></div>
+      <div class="progress-meta"><span id="progressLabel">Écran 1 sur 24</span><span id="progressPct">4 %</span></div>
+    </div>
+    <div class="actions">
+      <button class="icon-btn hide-sm" id="mediaBtn" title="Charger les vidéos">🎥 Médias</button>
+      <button class="icon-btn" id="fsBtn" title="Plein écran">⛶</button>
+    </div>
+  </div>
+</header>
+
+
+<div class="shell">
+<aside class="sidebar">
+  <div class="side-head"><h2>Parcours</h2><p>24 écrans · 25 à 30 min</p></div>
+  <nav class="nav" id="sideNav"></nav>
+</aside>
+
+
+<main class="main" id="main">
+<section class="screen active" data-title="Bienvenue">
+  <div class="hero">
+    <div>
+      <div class="eyebrow">Service de néonatologie · CHT Gaston Bourret</div>
+      <h1>Massage abdominal chez le prématuré et le nouveau-né à terme</h1>
+      <p class="lead">Un parcours court pour décider, préparer et réaliser le soin en sécurité, sans transformer le massage en geste systématique.</p>
+      <div class="pills">
+        <span class="pill"><strong>Durée</strong> 25–30 min</span>
+        <span class="pill"><strong>Format</strong> interactif</span>
+        <span class="pill"><strong>Version</strong> 0.9</span>
+      </div>
+      <div class="cta"><button class="btn btn-primary" data-next>Commencer</button><button class="btn btn-secondary" id="resumeBtn">Reprendre ma progression</button></div>
+      <p class="small">Les points encore en arbitrage métier sont affichés comme provisoires et ne comptent pas dans le score.</p>
+    </div>
+    <div class="hero-art">
+      <div class="baby-symbol">👶</div>
+      <div class="hero-note">Objectif : <strong>masser en toute sécurité</strong>, dans le respect de la physiologie et de la tolérance du nouveau-né.</div>
+    </div>
+  </div>
+</section>
+
+
+<section class="screen" data-title="Première décision">
+  <div class="eyebrow">Décider avant d’agir</div><h2>Le massage abdominal est-il un réflexe systématique ?</h2>
+  <p class="lead">Un nouveau-né présente un inconfort digestif. Quel est votre premier réflexe ?</p>
+  <div class="choice-grid" data-question="q1" data-correct="b">
+    <button class="choice" data-value="a"><strong>A.</strong><span>Réaliser le massage systématiquement.</span></button>
+    <button class="choice" data-value="b"><strong>B.</strong><span>Vérifier d’abord que la situation s’y prête.</span></button>
+    <button class="choice" data-value="c"><strong>C.</strong><span>Attendre obligatoirement 24 heures sans selles.</span></button>
+  </div>
+  <div class="feedback" id="fb-q1"></div>
+</section>
+
+
+<section class="screen" data-title="Stop au tube de dentifrice">
+  <div class="eyebrow">Changer de représentation</div><h2>Le but n’est pas de faire « sortir » les selles</h2>
+  <p class="big-quote">Le massage cherche à stimuler et faciliter la motricité digestive physiologique, pas à provoquer mécaniquement l’évacuation.</p>
+  <div class="stop-visual"><div><div class="circle">🧴</div><div class="stop-caption">STOP au « tube de dentifrice »</div></div></div>
+</section>
+
+
+<section class="screen" data-title="Pourquoi ne pas appuyer ?">
+  <div class="eyebrow">Comprendre le risque</div><h2>Pourquoi éviter une pression mécanique sur l’abdomen ?</h2>
+  <p class="lead">Cliquez sur les cartes pour révéler les conséquences décrites dans le protocole.</p>
+  <div class="flip-grid">
+    <button class="flip"><div class="front"><h3>01</h3><p>Risque digestif</p></div><div class="back">Accentuation possible du risque de dégradation digestive, dont entéropathies et perforations.</div></button>
+    <button class="flip"><div class="front"><h3>02</h3><p>Péristaltisme</p></div><div class="back">La pression mécanique n’aide pas la mise en place physiologique du péristaltisme.</div></button>
+    <button class="flip"><div class="front"><h3>03</h3><p>Physiologie</p></div><div class="back">Le soin doit respecter la physiologie digestive et ne pas rechercher l’évacuation forcée.</div></button>
+    <button class="flip"><div class="front"><h3>04</h3><p>Dystimulation</p></div><div class="back">Une pression inadaptée peut majorer les signes de dystimulation.</div></button>
+    <button class="flip"><div class="front"><h3>05</h3><p>Stabilité</p></div><div class="back">Bradycardies, désaturations ou apnées font partie des signes de mauvaise tolérance à surveiller.</div></button>
+  </div>
+</section>
+
+
+<section class="screen" data-title="Quelques repères">
+  <div class="eyebrow">Comprendre</div><h2>Trois notions utiles avant de commencer</h2>
+  <div class="grid3">
+    <div class="card"><div class="kicker">Massage abdominal</div><h3>Une technique manuelle ciblée</h3><p>Elle cible la zone du ventre afin de favoriser le transit, diminuer les ballonnements, relâcher les tensions et contribuer à la gestion du stress.</p></div>
+    <div class="card"><div class="kicker">Constipation</div><h3>Un rythme ou une consistance inhabituels</h3><p>Le protocole décrit une perturbation du rythme habituel, des selles plus dures et une émission difficile ou douloureuse.</p></div>
+    <div class="card"><div class="kicker">Ballonnement</div><h3>Accumulation de gaz</h3><p>Lorsque les gaz intestinaux ne peuvent pas être éliminés, ils s’accumulent et peuvent provoquer des douleurs.</p></div>
+  </div>
+</section>
+
+
+<section class="screen" data-title="Ce que l’on sait">
+  <div class="eyebrow">Niveau de preuve</div><h2>Massage corporel et massage abdominal : ne pas tout confondre</h2>
+  <div class="grid2">
+    <div class="card good"><div class="kicker">Massage corporel</div><h3>Davantage étudié</h3><p>Le support d’équipe cite notamment la prise pondérale, la baisse du cortisol et la stimulation de la physiologie digestive.</p></div>
+    <div class="card warning"><div class="kicker">Massage abdominal</div><h3>Moins étudié</h3><p>Le support emploie une formulation prudente : il « permettrait » notamment de diminuer certains résidus, vomissements ou distensions et d’augmenter la fréquence des selles.</p><span class="tag-provisional">Formulation à valider</span></div>
+  </div>
+</section>
+
+
+<section class="screen" data-title="Puis-je réaliser le soin ?">
+  <div class="eyebrow">Décision clinique</div><h2>Je masse, je ne masse pas, ou je réévalue ?</h2>
+  <p class="lead">Testez les situations ci-dessous. Les points litigieux ne sont pas scorés dans cette version.</p>
+  <div class="choice-grid scenario-list">
+    <button class="choice" data-scenario="stop"><strong>Instabilité hémodynamique</strong><span>Bradycardies, désaturations, syndrome apnéique…</span></button>
+    <button class="choice" data-scenario="no"><strong>Pathologie digestive en cours</strong><span>Entéropathie, entérocolite, iléus, atrésie…</span></button>
+    <button class="choice" data-scenario="stop"><strong>Signes importants de dystimulation</strong><span>Bâillements fréquents, hoquets, hyperextension, pleurs…</span></button>
+    <button class="choice" data-scenario="wait"><strong>Massage immédiatement après une alimentation</strong><span>Le soin doit être réalisé à distance des alimentations.</span></button>
+  </div>
+  <div class="feedback show" id="scenarioFb">Cliquez sur une situation pour afficher la conduite attendue.</div>
+</section>
+
+
+<section class="screen" data-title="Inclusion, stopper, exclusion">
+  <div class="eyebrow">Repère décisionnel</div><h2>Trois colonnes pour orienter la décision</h2>
+  <div class="triad">
+    <div class="col"><h3>Peut être envisagé</h3><p>Nouveau-né à terme stable, et situations compatibles avec les critères d’inclusion du protocole.</p><span class="tag-provisional">Seuil de prématurité à harmoniser</span></div>
+    <div class="col stop"><h3>Stopper</h3><p>Dystimulation, inconfort, instabilité hémodynamique. Le support Canva ajoute vomissements et diarrhée.</p><span class="tag-provisional">Vomissements / diarrhée à confirmer</span></div>
+    <div class="col no"><h3>Ne pas réaliser</h3><p>Pathologie digestive en cours, instabilité hémodynamique, certaines situations chirurgicales.</p><span class="tag-provisional">Accord médical après chirurgie à préciser</span></div>
+  </div>
+</section>
+
+
+<section class="screen" data-title="Préparer le soin">
+  <div class="eyebrow">Avant de toucher</div><h2>Préparer le soin et le nouveau-né</h2>
+  <p class="lead">Cochez les conditions réunies. Cette checklist ne remplace pas l’évaluation clinique.</p>
+  <div class="checklist" id="prepChecklist">
+    <label class="check"><input type="checkbox"> Mains propres</label>
+    <label class="check"><input type="checkbox"> Mains chaudes</label>
+    <label class="check"><input type="checkbox"> Nouveau-né éveillé et disponible</label>
+    <label class="check"><input type="checkbox"> Liniment oléo-calcaire</label>
+    <label class="check"><input type="checkbox"> Annoncer le soin et prendre contact</label>
+    <label class="check"><input type="checkbox"> Installation contenante adaptée</label>
+    <label class="check"><input type="checkbox"> À distance d’une alimentation</label>
+    <label class="check"><input type="checkbox"> À distance d’un soin invasif ou dystimulant</label>
+  </div>
+  <div class="feedback" id="prepFb"></div>
+</section>
+
+
+<section class="screen" data-title="Les six gestes">
+  <div class="eyebrow">Vue d’ensemble</div><h2>Les six gestes du protocole</h2>
+  <p class="lead">Repérez la séquence avant d’entrer dans le détail. Le drainage est facultatif.</p>
+  <div class="steps-board">
+    <div class="step-card"><span class="num">1</span><div class="gesture">↘️</div><div class="name">Les traits tirés</div><p class="small">Accompagner l’expiration.</p></div>
+    <div class="step-card"><span class="num">2</span><div class="gesture">〰️</div><div class="name">La virgule</div><p class="small">Côlon sigmoïde / descendant.</p></div>
+    <div class="step-card"><span class="num">3</span><div class="gesture">⬇️</div><div class="name">Le « i »</div><p class="small">Mouvement vers le bas.</p></div>
+    <div class="step-card"><span class="num">4</span><div class="gesture">☀️🌙</div><div class="name">Soleil et lune</div><p class="small">Cercle complet + demi-cercle.</p></div>
+    <div class="step-card"><span class="num">5</span><div class="gesture">🔺</div><div class="name">Le drainage</div><p class="small">Facultatif · triangle vers le foie.</p></div>
+    <div class="step-card"><span class="num">6</span><div class="gesture">↩️</div><div class="name">Enroulement du bassin</div><p class="small">Regroupement et légères rotations.</p></div>
+  </div>
+</section>
+
+
+<section class="screen gesture-screen" data-title="Geste 1 — traits tirés" data-video="DSCF3523_1_1.mp4">
+  <div class="eyebrow">Geste 1</div><h2>Les traits tirés</h2>
+  <div class="video-zone"><div class="video-card"></div><div class="gesture-info">
+    <div class="annotation"><strong>Position</strong>Mains sur le diaphragme, sous les côtes. Pouces au niveau de l’appendice xiphoïde.</div>
+    <div class="annotation"><strong>Moment</strong>Accompagner les phases d’expiration.</div>
+    <div class="annotation"><strong>Intention</strong>Accompagner la mobilité naturelle des viscères et donner un retour proprioceptif.</div>
+    <div class="memory-rule">Observer la respiration avant de guider le mouvement.</div>
+  </div></div>
+</section>
+
+
+<section class="screen gesture-screen" data-title="Geste 2 — virgule" data-video="DSCF3524_1.mp4">
+  <div class="eyebrow">Geste 2</div><h2>La virgule</h2>
+  <div class="video-zone"><div class="video-card"></div><div class="gesture-info">
+    <div class="annotation"><strong>Zone</strong>Côlon sigmoïde et côlon descendant.</div>
+    <div class="annotation"><strong>Continuité</strong>Les mains s’alternent afin d’assurer un mouvement continu.</div>
+    <div class="annotation"><strong>Repère</strong>Le geste peut permettre d’évacuer les gaz.</div>
+    <span class="tag-provisional">Nombre de doigts à harmoniser</span>
+  </div></div>
+</section>
+
+
+<section class="screen gesture-screen" data-title="Geste 3 — le i" data-video="DSCF3524_3.mp4">
+  <div class="eyebrow">Geste 3</div><h2>Le « i »</h2>
+  <div class="video-zone"><div class="video-card"></div><div class="gesture-info">
+    <div class="annotation"><strong>Direction</strong>Le mouvement est réalisé vers le bas.</div>
+    <div class="annotation"><strong>Continuité</strong>Les mains s’alternent pour maintenir le mouvement.</div>
+    <div class="memory-rule">Vers le bas, sans rupture de contact.</div>
+    <span class="tag-provisional">Nombre de doigts à préciser</span>
+  </div></div>
+</section>
+
+
+<section class="screen gesture-screen" data-title="Geste 4 — soleil et lune" data-video="Eden.mp4">
+  <div class="eyebrow">Geste 4</div><h2>Soleil et lune</h2>
+  <div class="video-zone"><div class="video-card"></div><div class="gesture-info">
+    <div class="annotation"><strong>Soleil</strong>Une main réalise un cercle complet autour de l’ombilic.</div>
+    <div class="annotation"><strong>Lune</strong>L’autre main réalise un demi-cercle.</div>
+    <div class="annotation"><strong>Règle</strong>Lorsqu’une main termine son mouvement, l’autre est déjà en contact.</div>
+    <span class="tag-provisional">Paume / phalanges à harmoniser</span>
+  </div></div>
+</section>
+
+
+<section class="screen gesture-screen" data-title="Geste 5 — drainage" data-video="DSCF3524_2.mp4">
+  <div class="eyebrow">Geste 5 · facultatif</div><h2>Le drainage</h2>
+  <div class="video-zone"><div class="video-card"></div><div class="gesture-info">
+    <div class="annotation"><strong>Trajectoire</strong>Effleurage continu en triangle, du bas ventre vers le foie.</div>
+    <div class="annotation"><strong>Continuité</strong>Les mains s’alternent entre elles.</div>
+    <div class="memory-rule">Cette étape est facultative.</div>
+    <span class="tag-provisional">Surface de la main à préciser</span>
+  </div></div>
+</section>
+
+
+<section class="screen gesture-screen" data-title="Geste 6 — bassin" data-video="DSCF3524_4.mp4">
+  <div class="eyebrow">Geste 6</div><h2>L’enroulement du bassin</h2>
+  <div class="video-zone"><div class="video-card"></div><div class="gesture-info">
+    <div class="annotation"><strong>Regrouper</strong>Enrouler le bassin tout en donnant un appui dorsal.</div>
+    <div class="annotation"><strong>Alignement</strong>Respecter l’axe tête-cou-tronc.</div>
+    <div class="annotation"><strong>Rotation</strong>Effectuer de légères rotations du bassin.</div>
+    <div class="card danger"><strong>Vigilance</strong><p>Ne pas replier les genoux sur l’abdomen. L’angle maximal d’enroulement est d’environ 45°.</p></div>
+  </div></div>
+</section>
+
+
+<section class="screen" data-title="Garder le contact">
+  <div class="eyebrow">Règle transversale</div><h2>Le contact ne doit jamais être interrompu</h2>
+  <p class="big-quote">Lorsqu’une main termine son mouvement, l’autre est déjà en contact.</p>
+  <div class="grid2">
+    <div class="card good"><h3>À rechercher</h3><p>Un geste continu, contenant et lisible pour le nouveau-né.</p></div>
+    <div class="card danger"><h3>À éviter</h3><p>Des mains qui quittent brutalement l’abdomen entre deux mouvements.</p></div>
+  </div>
+</section>
+
+
+<section class="screen" data-title="La pression">
+  <div class="eyebrow">Technique</div><h2>Pas de poussée mécanique dans l’abdomen</h2>
+  <p class="lead">Le protocole distingue le poids d’une main soutenue chez le prématuré et le poids naturel de la main chez le nouveau-né à terme.</p>
+  <div class="pressure-sim">
+    <button class="pressure bad" data-pressure="bad"><span class="hand">✋</span><h3>Ajouter une poussée</h3><p>Pression volontaire supplémentaire.</p></button>
+    <button class="pressure safe" data-pressure="safe"><span class="hand">🤲</span><h3>Main soutenue</h3><p>Repère cité pour le prématuré.</p></button>
+    <button class="pressure safe" data-pressure="safe"><span class="hand">🖐️</span><h3>Poids de la main</h3><p>Sans pousser davantage dans l’abdomen.</p></button>
+  </div>
+  <div class="feedback" id="pressureFb"></div>
+  <p><span class="tag-provisional">Règle détaillée taille / poids à harmoniser avec le support Canva</span></p>
+</section>
+
+
+<section class="screen" data-title="Savoir s’arrêter">
+  <div class="eyebrow">Sécurité</div><h2>Quand faut-il arrêter le soin ?</h2>
+  <div class="grid3">
+    <div class="card danger"><h3>Dystimulation</h3><p>Des signes importants imposent de réévaluer et d’arrêter le soin.</p></div>
+    <div class="card danger"><h3>Inconfort</h3><p>La tolérance du nouveau-né reste le fil conducteur pendant tout le massage.</p></div>
+    <div class="card danger"><h3>Instabilité</h3><p>Bradycardie, désaturation, apnée ou autre instabilité hémodynamique imposent l’arrêt.</p></div>
+  </div>
+  <p style="margin-top:18px"><span class="tag-provisional">Vomissements et diarrhée apparaissent comme critères « STOPPER » dans le Canva : validation en attente.</span></p>
+</section>
+
+
+<section class="screen" data-title="Après le massage">
+  <div class="eyebrow">Après-soin</div><h2>Pas de selle immédiate : échec ou non ?</h2>
+  <div class="choice-grid" data-question="q20" data-correct="b">
+    <button class="choice" data-value="a"><strong>A.</strong><span>Oui, le massage n’a pas fonctionné.</span></button>
+    <button class="choice" data-value="b"><strong>B.</strong><span>Non, l’émission immédiate de selles n’est pas l’objectif du massage.</span></button>
+  </div>
+  <div class="feedback" id="fb-q20"></div>
+</section>
+
+
+<section class="screen" data-title="Conduite à tenir">
+  <div class="eyebrow">Repère du protocole</div><h2>Conduite à tenir en cas d’inconfort digestif</h2>
+  <div class="flow">
+    <div class="node">Inconfort digestif</div><div class="arrow">→</div>
+    <div class="node">Massage abdominal 1 fois / 12 h</div><div class="arrow">→</div>
+    <div class="node">Absence de selles sur 24 h ?</div><div class="arrow">→</div>
+    <div class="node">Étape 2 du protocole</div><div class="arrow">→</div>
+    <div class="node">Réévaluation médicale si persistance</div>
+  </div>
+  <div class="card warning" style="margin-top:24px">
+    <h3>Contenu non scoré dans la v0.9</h3>
+    <p>Le protocole prévoit ensuite une conduite différente selon un poids inférieur ou supérieur à 2 000 g, avec glycérol nourrissons. Cette partie est visible pour couvrir le corpus mais reste à valider avant publication définitive.</p>
+  </div>
+</section>
+
+
+<section class="screen" data-title="Situation finale">
+  <div class="eyebrow">Évaluation intégrative</div><h2>8 décisions pour vérifier l’essentiel</h2>
+  <p class="lead">Seuls les éléments non litigieux sont scorés.</p>
+  <div class="quiz-box">
+    <div class="quiz-status" id="quizDots"></div>
+    <div id="quizContent"></div>
+  </div>
+</section>
+
+
+<section class="screen" data-title="Synthèse">
+  <div class="eyebrow">À retenir</div><h2>Les 5 réflexes du massage abdominal</h2>
+  <div class="grid3">
+    <div class="card"><div class="kicker">1</div><h3>Vérifier</h3><p>Indication, inclusion, exclusion, tolérance.</p></div>
+    <div class="card"><div class="kicker">2</div><h3>Préparer</h3><p>Soignant, enfant, environnement et timing.</p></div>
+    <div class="card"><div class="kicker">3</div><h3>Masser</h3><p>Six gestes, sans pression mécanique, en gardant le contact.</p></div>
+    <div class="card"><div class="kicker">4</div><h3>Observer</h3><p>La tolérance pendant toute la durée du soin.</p></div>
+    <div class="card"><div class="kicker">5</div><h3>Réévaluer</h3><p>Le transit n’est pas nécessairement immédiat.</p></div>
+  </div>
+</section>
+
+
+<section class="screen" data-title="Ressources et fin">
+  <div class="eyebrow">Fin du parcours</div><h2>Ressources et statut de la version 0.9</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>Corpus CHT utilisé</h3>
+      <p>Protocole « Massage abdominal », support Canva exporté en PDF et 6 vidéos métier.</p>
+      <p class="small">Les médias restent locaux dans ce prototype : vous pouvez les charger avec le bouton « Médias ».</p>
+    </div>
+    <div class="card warning">
+      <h3>Arbitrages encore ouverts</h3>
+      <p>Seuil autour de 32 SA, accord médical après chirurgie, vomissements / diarrhée, nombre de doigts, paume / phalanges, règle détaillée de pression, formulation de certains bénéfices et massage parental.</p>
+    </div>
+  </div>
+  <hr>
+  <div id="finalScoreBlock">
+    <div class="kicker">Évaluation finale</div>
+    <div class="score" id="finalScore">—</div>
+    <p id="finalScoreText">Terminez la situation finale pour afficher votre résultat.</p>
+  </div>
+  <div class="cta"><button class="btn btn-primary" id="restartBtn">Recommencer</button><button class="btn btn-secondary" id="clearProgressBtn">Effacer la progression locale</button></div>
+</section>
+</main>
+</div>
+
+
+<div class="bottom-nav">
+  <button class="btn btn-secondary" id="prevBtn">← Précédent</button>
+  <div class="middle" id="bottomTitle">Bienvenue</div>
+  <button class="btn btn-primary" id="nextBtn">Suivant →</button>
+</div>
+</div>
+
+
+<div class="overlay" id="menuOverlay">
+  <div class="modal"><div style="display:flex;justify-content:space-between;gap:16px;align-items:center"><h2>Parcours</h2><button class="icon-btn closeOverlay">✕</button></div><div class="nav" id="mobileNav"></div></div>
+</div>
+
+
+<div class="overlay" id="mediaOverlay">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;gap:16px;align-items:center"><div><div class="eyebrow">Médias CHT</div><h2>Charger les 6 vidéos localement</h2></div><button class="icon-btn closeOverlay">✕</button></div>
+    <p>Les fichiers restent sur votre poste. Le navigateur crée uniquement des URL temporaires pour les afficher dans cette session.</p>
+    <div class="media-loader">
+      <label><strong>Sélectionnez les 6 fichiers MP4 extraits du ZIP CHT</strong><br><input type="file" id="videoPicker" accept="video/mp4,video/*" multiple></label>
+    </div>
+    <div class="file-status" id="fileStatus"></div>
+    <p class="small">Noms attendus : DSCF3523_1_1.mp4, DSCF3524_1.mp4, DSCF3524_2.mp4, DSCF3524_3.mp4, DSCF3524_4.mp4, Eden.mp4.</p>
+  </div>
+</div>
+
+
+<script>
+(function(){
+  var screens = Array.prototype.slice.call(document.querySelectorAll('.screen'));
+  var current = 0;
+  var key = 'cht-massage-v09-progress';
+  var quizKey = 'cht-massage-v09-quiz';
+  var titles = screens.map(function(s){return s.getAttribute('data-title') || '';});
+  var videoNames = ['DSCF3523_1_1.mp4','DSCF3524_1.mp4','DSCF3524_2.mp4','DSCF3524_3.mp4','DSCF3524_4.mp4','Eden.mp4'];
+  var videoUrls = {};
+  var quizIndex = 0, quizScore = 0, quizAnswered = [];
+  var quiz = [
+    {q:'Le massage abdominal doit-il être systématique face à un inconfort digestif ?',a:['Oui','Non, il faut vérifier l’indication et les critères'],c:1},
+    {q:'Quel élément impose clairement de ne pas poursuivre ?',a:['Une instabilité hémodynamique','L’absence immédiate de selles'],c:0},
+    {q:'Quel geste est facultatif dans la séquence ?',a:['La virgule','Le drainage','Soleil et lune'],c:1},
+    {q:'Quelle règle est transversale aux gestes ?',a:['Rompre le contact entre deux mouvements','Maintenir un contact continu'],c:1},
+    {q:'Quelle pratique est à éviter ?',a:['Le poids naturel de la main','Une poussée mécanique volontaire dans l’abdomen'],c:1},
+    {q:'Face à des signes de dystimulation importants, que faire ?',a:['Poursuivre plus doucement','Arrêter et réévaluer'],c:1},
+    {q:'Après le massage, l’absence immédiate de selles signifie-t-elle un échec ?',a:['Oui','Non'],c:1},
+    {q:'Pour l’enroulement du bassin, quelle vigilance est décrite ?',a:['Replier fortement les genoux sur l’abdomen','Éviter cette flexion et limiter l’enroulement à environ 45°'],c:1}
+  ];
+
+
+  function navHtml(){
+    return titles.map(function(t,i){return '<button data-goto="'+i+'"><span class="n">'+(i+1)+'</span><span class="label">'+t+'</span></button>';}).join('');
+  }
+  document.getElementById('sideNav').innerHTML = navHtml();
+  document.getElementById('mobileNav').innerHTML = navHtml();
+
+
+  function show(i, save){
+    i = Math.max(0,Math.min(screens.length-1,i));
+    current=i;
+    screens.forEach(function(s,j){s.classList.toggle('active',j===i);});
+    document.querySelectorAll('.nav button').forEach(function(b){b.classList.toggle('active',Number(b.getAttribute('data-goto'))===i);});
+    var pct = Math.round(((i+1)/screens.length)*100);
+    document.getElementById('progressBar').style.width=pct+'%';
+    document.getElementById('progressLabel').textContent='Écran '+(i+1)+' sur '+screens.length;
+    document.getElementById('progressPct').textContent=pct+' %';
+    document.getElementById('bottomTitle').textContent=titles[i];
+    document.getElementById('prevBtn').disabled=i===0;
+    document.getElementById('nextBtn').textContent=i===screens.length-1?'Fin':'Suivant →';
+    if(save!==false) localStorage.setItem(key,String(i));
+    window.scrollTo({top:0,behavior:'smooth'});
+    hydrateVideos();
+    if(titles[i]==='Situation finale') renderQuiz();
+  }
+
+
+  document.addEventListener('click',function(e){
+    var g=e.target.closest('[data-goto]'); if(g){show(Number(g.getAttribute('data-goto')));closeOverlays();return;}
+    var n=e.target.closest('[data-next]'); if(n){show(current+1);return;}
+    var f=e.target.closest('.flip'); if(f){f.classList.toggle('open');}
+  });
+  document.getElementById('prevBtn').onclick=function(){show(current-1);};
+  document.getElementById('nextBtn').onclick=function(){if(current<screens.length-1)show(current+1);};
+  document.getElementById('resumeBtn').onclick=function(){var p=Number(localStorage.getItem(key)||0);show(p);};
+
+
+  function bindQuestion(id, okText, badText){
+    var box=document.querySelector('[data-question="'+id+'"]'); if(!box)return;
+    var correct=box.getAttribute('data-correct'); var fb=document.getElementById('fb-'+id);
+    box.querySelectorAll('.choice').forEach(function(b){
+      b.onclick=function(){
+        box.querySelectorAll('.choice').forEach(function(x){x.classList.remove('selected','correct','wrong');});
+        var v=b.getAttribute('data-value'); b.classList.add('selected',v===correct?'correct':'wrong');
+        fb.innerHTML=v===correct?okText:badText;fb.classList.add('show');
+      };
+    });
+  }
+  bindQuestion('q1','<strong>Exact.</strong> Le massage est un soin ciblé et non systématique. L’indication et la tolérance doivent être réévaluées.','<strong>À revoir.</strong> Le protocole insiste sur le caractère non systématique du soin.');
+  bindQuestion('q20','<strong>Exact.</strong> L’objectif est la régularisation du transit, pas l’émission immédiate de selles.','<strong>Non.</strong> Une selle immédiate n’est pas le critère de réussite du massage.');
+
+
+  document.querySelectorAll('.scenario-list .choice').forEach(function(b){
+    b.onclick=function(){
+      var v=b.getAttribute('data-scenario'),txt='';
+      if(v==='stop')txt='<strong>Stopper / ne pas engager.</strong> La tolérance et la stabilité clinique priment.';
+      if(v==='no')txt='<strong>Ne pas réaliser.</strong> Une pathologie digestive en cours fait partie des exclusions.';
+      if(v==='wait')txt='<strong>Reporter.</strong> Le soin doit être réalisé à distance des alimentations.';
+      document.getElementById('scenarioFb').innerHTML=txt;
+    };
+  });
+
+
+  document.querySelectorAll('#prepChecklist input').forEach(function(c){
+    c.onchange=function(){
+      var all=Array.prototype.slice.call(document.querySelectorAll('#prepChecklist input'));
+      var done=all.filter(function(x){return x.checked;}).length;
+      var fb=document.getElementById('prepFb');
+      fb.innerHTML='<strong>'+done+' / '+all.length+'</strong> conditions repérées.';
+      fb.classList.add('show');
+    };
+  });
+
+
+  document.querySelectorAll('.pressure').forEach(function(b){
+    b.onclick=function(){
+      var fb=document.getElementById('pressureFb');
+      fb.innerHTML=b.getAttribute('data-pressure')==='bad'?'<strong>À éviter.</strong> Le massage ne correspond pas à une poussée mécanique dans l’abdomen.':'<strong>Repère compatible avec le protocole.</strong> Le poids de la main doit rester adapté, sans poussée supplémentaire.';
+      fb.classList.add('show');
+    };
+  });
+
+
+  function placeholder(card,name){
+    card.innerHTML='<div class="video-empty"><div class="icon">🎥</div><strong>'+name+'</strong><span>Chargez les vidéos avec le bouton « Médias » pour lire la démonstration CHT dans cet écran.</span></div>';
+  }
+  function hydrateVideos(){
+    document.querySelectorAll('.gesture-screen').forEach(function(s){
+      var name=s.getAttribute('data-video'), card=s.querySelector('.video-card');
+      if(!card)return;
+      if(videoUrls[name]){
+        if(card.getAttribute('data-loaded')!==name){
+          card.innerHTML='<video controls playsinline preload="metadata" src="'+videoUrls[name]+'"></video>';
+          card.setAttribute('data-loaded',name);
+        }
+      } else placeholder(card,name);
+    });
+  }
+  hydrateVideos();
+
+
+  function renderFileStatus(){
+    document.getElementById('fileStatus').innerHTML=videoNames.map(function(n){
+      return '<div class="file-chip '+(videoUrls[n]?'ok':'')+'">'+(videoUrls[n]?'✓ ':'○ ')+n+'</div>';
+    }).join('');
+  }
+  renderFileStatus();
+  document.getElementById('videoPicker').onchange=function(e){
+    Array.prototype.slice.call(e.target.files||[]).forEach(function(file){
+      if(videoNames.indexOf(file.name)>=0){
+        if(videoUrls[file.name]) URL.revokeObjectURL(videoUrls[file.name]);
+        videoUrls[file.name]=URL.createObjectURL(file);
+      }
+    });
+    renderFileStatus();hydrateVideos();
+  };
+
+
+  function renderQuiz(){
+    var dots=document.getElementById('quizDots');
+    dots.innerHTML=quiz.map(function(_,i){return '<span class="dot '+(quizAnswered[i]!==undefined?'done':'')+'">'+(i+1)+'</span>';}).join('');
+    var c=document.getElementById('quizContent');
+    if(quizIndex>=quiz.length){
+      var pct=Math.round((quizScore/quiz.length)*100);
+      c.innerHTML='<div class="score">'+quizScore+' / '+quiz.length+'</div><h3>'+pct+' %</h3><p>Les questions portent uniquement sur les éléments non litigieux de cette version.</p><button class="btn btn-primary" id="quizToEnd">Voir la synthèse</button>';
+      document.getElementById('finalScore').textContent=quizScore+' / '+quiz.length;
+      document.getElementById('finalScoreText').textContent='Score obtenu sur les 8 décisions évaluées de la version 0.9.';
+      localStorage.setItem(quizKey,JSON.stringify({score:quizScore,answers:quizAnswered,done:true}));
+      setTimeout(function(){var b=document.getElementById('quizToEnd');if(b)b.onclick=function(){show(22);};},0);
+      return;
+    }
+    var item=quiz[quizIndex];
+    c.innerHTML='<div class="kicker">Décision '+(quizIndex+1)+' / '+quiz.length+'</div><h3 style="font-size:25px">'+item.q+'</h3><div class="choice-grid">'+item.a.map(function(a,i){return '<button class="choice quiz-choice" data-a="'+i+'"><strong>'+(String.fromCharCode(65+i))+'.</strong><span>'+a+'</span></button>';}).join('')+'</div><div class="feedback" id="quizFb"></div>';
+    c.querySelectorAll('.quiz-choice').forEach(function(b){
+      b.onclick=function(){
+        if(quizAnswered[quizIndex]!==undefined)return;
+        var a=Number(b.getAttribute('data-a')),good=a===item.c;
+        quizAnswered[quizIndex]=a;if(good)quizScore++;
+        b.classList.add(good?'correct':'wrong');
+        var fb=document.getElementById('quizFb');fb.innerHTML=good?'<strong>Bonne décision.</strong>':'<strong>À revoir.</strong> La réponse attendue est : '+item.a[item.c]+'.';fb.classList.add('show');
+        setTimeout(function(){quizIndex++;renderQuiz();},650);
+      };
+    });
+  }
+  var savedQuiz=localStorage.getItem(quizKey);
+  if(savedQuiz){
+    try{var sq=JSON.parse(savedQuiz);if(sq.done){quizScore=sq.score||0;quizAnswered=sq.answers||[];quizIndex=quiz.length;document.getElementById('finalScore').textContent=quizScore+' / '+quiz.length;document.getElementById('finalScoreText').textContent='Score enregistré localement.';}}catch(e){}
+  }
+
+
+  document.getElementById('restartBtn').onclick=function(){quizIndex=0;quizScore=0;quizAnswered=[];localStorage.removeItem(quizKey);show(0);};
+  document.getElementById('clearProgressBtn').onclick=function(){localStorage.removeItem(key);localStorage.removeItem(quizKey);quizIndex=0;quizScore=0;quizAnswered=[];alert('Progression locale effacée.');show(0);};
+
+
+  function toggleFs(){
+    if(!document.fullscreenElement){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();}
+    else{document.exitFullscreen&&document.exitFullscreen();}
+  }
+  document.getElementById('fsBtn').onclick=toggleFs;
+
+
+  var menuOverlay=document.getElementById('menuOverlay'),mediaOverlay=document.getElementById('mediaOverlay');
+  document.getElementById('openMenu').onclick=function(){menuOverlay.classList.add('show');};
+  document.getElementById('mediaBtn').onclick=function(){mediaOverlay.classList.add('show');};
+  document.querySelectorAll('.closeOverlay').forEach(function(b){b.onclick=closeOverlays;});
+  document.querySelectorAll('.overlay').forEach(function(o){o.addEventListener('click',function(e){if(e.target===o)closeOverlays();});});
+  function closeOverlays(){menuOverlay.classList.remove('show');mediaOverlay.classList.remove('show');}
+
+
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight' && current<screens.length-1)show(current+1);
+    if(e.key==='ArrowLeft' && current>0)show(current-1);
+    if(e.key==='Escape')closeOverlays();
+  });
+
+
+  var p=Number(localStorage.getItem(key)||0);
+  show(0,false);
+})();
+</script>
+</body>
+</html>
