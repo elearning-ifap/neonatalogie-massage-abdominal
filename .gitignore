@@ -1,0 +1,10 @@
+# Ressources sensibles CHT — exclus du contrôle de version
+/images/
+/videos/
+*.mp4
+*.webp
+*.jpg
+*.jpeg
+*.png
+*.pdf
+*.zip

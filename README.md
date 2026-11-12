@@ -1,42 +1,16 @@
-# Massage abdominal en néonatologie
+# Massage abdominal en néonatologie — v1.4
 
-Prototype pédagogique HTML5 développé pour le CHT Gaston Bourret.
+Prototype de validation interne CHT, **non validé pour un usage clinique**.
 
-## Version
+## Confidentialité
+Cette branche GitHub privée contient **uniquement le code HTML/CSS/JavaScript et les documents techniques**. Elle ne contient **aucune vidéo du CHT et aucune photographie de patient**. Ne pas créer de GitHub Pages, ne pas rendre le dépôt public, ne pas commiter les dossiers `images/` et `videos/`.
 
-v0.9 — prototype fonctionnel
+Les médias sont présents dans une **archive locale distincte, réservée aux personnes autorisées par le CHT**. Pour les utiliser, décompresser cette archive locale. Le site affiche des messages d'absence des médias lorsque seul le code GitHub est utilisé.
 
-## Contenu
+## Utilisation
+Ouvrir `index.html` avec Edge ou Chrome, ou utiliser `OUVRIR-LE-SITE.cmd` sur Windows. Les 24 écrans, les six parcours gestuels en quatre étapes et les huit questions finales sont conservés. Les réponses formatives ne sont pas notées et les résultats sont enregistrés localement dans le navigateur.
 
-- 24 écrans
-- navigation précédente / suivante
-- menu latéral
-- progression enregistrée localement
-- mode plein écran
-- responsive desktop / mobile
-- interactions pédagogiques
-- checklist de préparation
-- parcours détaillé des 6 gestes
-- évaluation finale en 8 décisions
-- gestion séparée des points métier encore en arbitrage
+## État
+Version v1.4 de **prévalidation** ; les six associations vidéo/geste, les consignes médicales et les autorisations de diffusion restent à faire valider par le CHT. Voir `LISEZ-MOI.md` et `RECETTE_V1_4.md`.
 
-## Médias CHT
-
-Les 6 vidéos du CHT ne sont pas stockées dans ce dépôt.
-
-Le prototype permet de les charger localement depuis le navigateur via le bouton **Médias**.
-
-Noms attendus :
-
-- DSCF3523_1_1.mp4
-- DSCF3524_1.mp4
-- DSCF3524_2.mp4
-- DSCF3524_3.mp4
-- DSCF3524_4.mp4
-- Eden.mp4
-
-## Statut
-
-Prototype destiné à la recette pédagogique et métier.
-
-Les éléments signalés comme provisoires dans le module ne sont pas utilisés pour le score final tant que l’arbitrage métier n’est pas obtenu.
+Source de travail : protocole CHT, BRIEDA Marion, LESSIRE Véronique et LAVALLEE Lucie.
